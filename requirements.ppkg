@@ -2,8 +2,7 @@ pandas
 numpy
 matplotlib
 requests
-json
 ipywidgets
 IProgress
 ipympl
-pickle
+dill

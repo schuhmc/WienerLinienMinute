@@ -86,7 +86,7 @@ class apiData():
         filter (bool): remove incomplete and warning tracks
         '''
         res_df = self.outer_train_info.loc[(self.outer_train_info['station'] == which[0]) & (self.outer_train_info['line'] == which[1]) & (self.outer_train_info['towards'] == which[2])]
-        res_df = res_df.iloc[-1]['vehicles_df']
+        res_df = res_df.iloc[-1]['vehicles_df']['vehicles_df']
 
         if filter:
             res_df = res_df.loc[(res_df['complete'] == 1) & (res_df['warning'] == 0)]
@@ -270,9 +270,8 @@ class vehicle():
             return True
        
         except Exception as e:
-            print(f"Exception {e} at time {time}. Setting train inactive and continuing.")
+            logging.debug(f"Exception {e} at time {time}. Setting train inactive and continuing.")
             return False
-            # TODO set train inactive when exception is thrown
 
         return "something else"
             
