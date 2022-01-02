@@ -33,7 +33,7 @@ class apiData():
         available = self.df.groupby(['station', 'line', 'towards']).size().rename('count').reset_index()
 
         if filter:
-            available = available.loc[~available['towards'].str.match('(.*\*)|(.*_)|.*(FFP2-MASKEN)|(.*\!)|.*NÄCHSTER|.*FAHRTBEHINDERUNG')]
+            available = available.loc[~available['towards'].str.match('(.*\*)|(.*_)|.*(FFP2-MASKEN)|(.*\!)|.*NÄCHSTER|.*FAHRTBEHINDERUNG|.*STÖRUNG')]
 
         return available.sort_values('count', ascending=False)
 
@@ -175,7 +175,11 @@ class apiData():
                                 all_vehicles.at[idx, 'vehicle'].arrive(row['time'])
 
                             else:
-                                all_vehicles.at[idx, 'vehicle'].trackTime(row['time'], row[4:].values)
+                                ret = all_vehicles.at[idx, 'vehicle'].trackTime(row['time'], row[4:].values)
+                                if not ret:
+                                    # we land here if there was an issue with the dataframe
+                                    all_vehicles.at[idx, 'active'] = 0
+                                    print(all_vehicles.at[idx, 'active'])
 
                         if len(row) == len(prev_row):
                             # if a train has arrived and the lengths of the arrays don't change, there must be a new vehicle.
@@ -188,8 +192,10 @@ class apiData():
 
                         success = list()
                         for idx, v in all_vehicles.loc[all_vehicles['active'] == 1].iterrows():
-                            all_vehicles.at[idx, 'vehicle'].trackTime(row['time'], row[4:].values)
-
+                            ret = all_vehicles.at[idx, 'vehicle'].trackTime(row['time'], row[4:].values)
+                            if not ret:
+                                # we land here if there was an issue with the dataframe
+                                all_vehicles.at[idx, 'active'] = 0
 
                         if len(row) > len(prev_row):
                             # if no train has arrived, but the length the countdown arrays has increased, there must be a new train as well.
@@ -260,8 +266,15 @@ class vehicle():
                     self.times.at[self.times.index[-1], 'warning'] = True
 
                 self.times = self.times.append({'countdown': cntwns[self.position], 'start': time, 'end': pd.NA, 'complete': False, 'warning': False}, ignore_index=True)
+
+            return True
+       
         except Exception as e:
-            print(f"Exception {e} at time {time}. Continuing.")
+            print(f"Exception {e} at time {time}. Setting train inactive and continuing.")
+            return False
+            # TODO set train inactive when exception is thrown
+
+        return "something else"
             
     def calculateDT(self):
         self.times['dt'] = self.times['end'] - self.times['start']
