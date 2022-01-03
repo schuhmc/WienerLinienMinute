@@ -6,3 +6,4 @@ ipywidgets
 IProgress
 ipympl
 dill
+seaborn

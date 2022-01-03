@@ -4,6 +4,9 @@ import json
 from datetime import datetime as dt
 from tqdm.notebook import tqdm
 import multiprocessing as mp
+import pytz
+
+timezone = pytz.timezone('Europe/Vienna')
 
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -86,7 +89,7 @@ class apiData():
         filter (bool): remove incomplete and warning tracks
         '''
         res_df = self.outer_train_info.loc[(self.outer_train_info['station'] == which[0]) & (self.outer_train_info['line'] == which[1]) & (self.outer_train_info['towards'] == which[2])]
-        res_df = res_df.iloc[-1]['vehicles_df']['vehicles_df']
+        res_df = res_df.iloc[-1]['vehicles_df'] # this is weird and may need double indexing on different python verisons or windows/linux differnces?
 
         if filter:
             res_df = res_df.loc[(res_df['complete'] == 1) & (res_df['warning'] == 0)]
@@ -280,7 +283,7 @@ class vehicle():
 
         hours = list()
         for idx, row in self.times.iterrows():
-            t = dt.fromtimestamp(row['start'])
+            t = dt.fromtimestamp(row['start'], timezone)
             hours.append(t.hour)
 
         self.times['hour'] = hours
