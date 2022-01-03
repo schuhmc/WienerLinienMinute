@@ -4,7 +4,8 @@ import time
 import pandas as pd
 import datetime
 
-class Scraper():
+
+class Scraper:
     """
     Implements a web scraper that accesses the Wiener Linien API to get departure countdown for a certain station. Iteratively writes or appends the data to an output csv-file.
 
@@ -14,12 +15,16 @@ class Scraper():
     delay: delay in between the requests in seconds.
     mode: python write/append mode. "w" will overwrite the outFile, "a" will append to the outFile
     """
-    def __init__(self, station, 
-                outFile,
-                url="https://apps.static-access.net/ViennaTransport/monitor/?",
-                delay = 10,
-                mode = "a",
-                columns=["station", "line", "towards", "countdown", "time"]) -> None:
+
+    def __init__(
+        self,
+        station,
+        outFile,
+        url="https://apps.static-access.net/ViennaTransport/monitor/?",
+        delay=10,
+        mode="a",
+        columns=["station", "line", "towards", "countdown", "time"],
+    ) -> None:
         self.station = station
         self.outFile = outFile
         self.url = url
@@ -32,9 +37,9 @@ class Scraper():
         self.query = f"{url}station={self.station}&countdown"
 
     def fetchResponse(self):
-    
+
         success = False
-        
+
         while not success:
             try:
                 fetch_time = time.time()
@@ -50,17 +55,19 @@ class Scraper():
         try:
             data[0]
         except KeyError:
-            print(f"Rate limitation encountered. Trying again after {self.delay *2} s...")
+            print(
+                f"Rate limitation encountered. Trying again after {self.delay *2} s..."
+            )
             time.sleep(self.delay * 2)
             return self.fetchResponse()
 
         df = pd.DataFrame(data)
-        df['time'] = fetch_time
+        df["time"] = fetch_time
         return df
 
     def save(self, df):
         # TODO
-        # Saves the data to the outFile. 
+        # Saves the data to the outFile.
         df.to_csv(self.outFile, index=False, mode="a", header=False)
 
         return True
@@ -78,8 +85,6 @@ class Scraper():
             # don't do anything if the outfile already exists and mode is set to append
             pass
 
-        
-
     def getDF(self):
         # TODO
         # returns dataframe from csv
@@ -96,7 +101,6 @@ class Scraper():
                 return True
             else:
                 return False
-            
 
     def run(self, run_until=None):
         """
@@ -116,8 +120,8 @@ class Scraper():
             self.save(out)
 
             # fancy time formatting for progress
-            t = time.localtime(out['time'][0])
-            t = time.strftime('%Y-%m-%d %H:%M:%S', t)
+            t = time.localtime(out["time"][0])
+            t = time.strftime("%Y-%m-%d %H:%M:%S", t)
             print(f"{t}: Fetched and saved result")
 
             if self.run_until == None:
