@@ -1,4 +1,5 @@
-pandas
+# In case this doesn't work, there's the pip freeze output at ./pip_freeze.txt
+pandas==1.3.5
 numpy
 matplotlib
 requests
@@ -6,4 +7,5 @@ ipywidgets
 IProgress
 ipympl
 dill
+tqdm
 seaborn
